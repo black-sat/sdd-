@@ -28,6 +28,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <functional>
 #include <cstdint>
 
 // forward declarations from the C API
@@ -152,6 +153,10 @@ namespace sdd {
 
     node condition(literal lit) const;
     node condition(std::vector<literal> const& lits) const;
+
+    std::optional<bool> value(literal lit) const;
+    
+    node rename(std::function<sdd::variable(sdd::variable)> renaming);
 
     bool is_valid() const;
     bool is_sat() const;

@@ -79,7 +79,8 @@ namespace sdd {
   }
 
   node manager::literal(sdd::literal lit) {
-    if(size_t(long(lit)) > var_count())
+    sdd::variable var = lit.variable();
+    if(unsigned(var) > var_count())
       throw std::invalid_argument("literal too large");
     return node{this, sdd_manager_literal(SddLiteral(lit), sdd())};
   }
@@ -212,6 +213,26 @@ namespace sdd {
         break;
     }
     return n;
+  }
+
+  std::optional<bool> node::value(class literal lit) const {
+    if(condition(lit).is_unsat())
+      return false;
+    if(condition(!lit).is_unsat())
+      return true;
+    return {};
+  }
+
+  node node::rename(std::function<sdd::variable(sdd::variable)> renaming) {
+    auto map = std::make_unique<SddLiteral[]>(manager()->var_count() + 1);
+
+    for(unsigned i = 1; i <= manager()->var_count(); i++)
+      map[i] = SddLiteral(sdd::literal(renaming(i)));
+
+    return node{
+      manager(),
+      sdd_rename_variables(sdd(), map.get(), manager()->sdd())
+    };
   }
 
   bool node::is_valid() const {
