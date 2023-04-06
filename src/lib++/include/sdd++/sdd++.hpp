@@ -30,6 +30,7 @@
 #include <vector>
 #include <functional>
 #include <cstdint>
+#include <cstdlib>
 
 // forward declarations from the C API
 struct vtree_t;
@@ -37,6 +38,11 @@ struct sdd_node_t;
 struct sdd_manager_t;
 
 namespace sdd {
+
+  template<typename T>
+  auto make_array_ptr(T *ptr) {
+    return std::unique_ptr<T[], void(*)(void*)>(ptr, &free);
+  }
 
   enum class GC {
     disabled = 0,
@@ -94,7 +100,7 @@ namespace sdd {
   class literal {
   public:
     literal() = default;
-    literal(variable var) : _lit{unsigned(var)} { }
+    literal(class variable var) : _lit{unsigned(var)} { }
     literal(long lit) : _lit{lit} { }
 
     explicit operator long() const { return long(_lit); }
@@ -138,11 +144,11 @@ namespace sdd {
 
     node operator!() const;
     friend node operator&&(node n1, node n2);
-    friend node operator&&(node n, literal l);
-    friend node operator&&(literal l, node n);
+    friend node operator&&(node n, class literal l);
+    friend node operator&&(class literal l, node n);
     friend node operator||(node n1, node n2);
-    friend node operator||(node n, literal l);
-    friend node operator||(literal l, node n);
+    friend node operator||(node n, class literal l);
+    friend node operator||(class literal l, node n);
 
     bool operator==(node const&other) const = default;
 
@@ -151,8 +157,8 @@ namespace sdd {
     friend node exists(std::vector<variable> const& vars, node n);
     friend node forall(std::vector<variable> const& vars, node n);
 
-    node condition(literal lit) const;
-    node condition(std::vector<literal> const& lits) const;
+    node condition(class literal lit) const;
+    node condition(std::vector<class literal> const& lits) const;
 
     std::optional<bool> value(literal lit) const;
     
@@ -161,7 +167,7 @@ namespace sdd {
     bool is_valid() const;
     bool is_sat() const;
     bool is_unsat() const;
-    std::optional<std::vector<literal>> model() const;
+    std::optional<std::vector<class literal>> model() const;
     
     bool is_literal() const;
     bool is_decision() const;

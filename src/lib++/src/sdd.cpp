@@ -31,6 +31,8 @@
 #include <vector>
 #include <cassert>
 
+#include <iostream>
+
 namespace sdd {
 
   //
@@ -106,11 +108,12 @@ namespace sdd {
     } { }
 
   std::vector<variable> node::variables() const {
-    auto vars = std::unique_ptr<int[]>(sdd_variables(sdd(), manager()->sdd()));
+    auto vars = make_array_ptr(sdd_variables(sdd(), manager()->sdd()));
     
     std::vector<variable> result;
     for(unsigned i = 1; i <= manager()->var_count(); ++i) {
-      result.push_back(variable{i});
+      if(vars[i])
+        result.push_back(variable{i});
     }
     return result;
   }
@@ -224,10 +227,14 @@ namespace sdd {
   }
 
   node node::rename(std::function<sdd::variable(sdd::variable)> renaming) {
-    auto map = std::make_unique<SddLiteral[]>(manager()->var_count() + 1);
+    size_t n = manager()->var_count();
+    auto map = std::make_unique<SddLiteral[]>(n + 1);
 
-    for(unsigned i = 1; i <= manager()->var_count(); i++)
+    for(unsigned i = 1; i <= n; i++) {
       map[i] = SddLiteral(sdd::literal(renaming(i)));
+    }
+
+    assert(manager()->var_count() == n);
 
     return node{
       manager(),
