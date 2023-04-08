@@ -48,6 +48,13 @@ namespace sdd {
     return size_t(sdd_manager_var_count(sdd()));
   }
 
+  std::vector<variable> manager::variables() const {
+    std::vector<variable> vars;
+    for(unsigned i = 1; i <= var_count(); ++i)
+      vars.push_back(i);
+    return vars;
+  }
+
   std::vector<variable> manager::var_order() const {
     size_t count = var_count();
     auto order = std::make_unique<SddLiteral[]>(count);
@@ -240,6 +247,16 @@ namespace sdd {
       manager(),
       sdd_rename_variables(sdd(), map.get(), manager()->sdd())
     };
+  }
+
+  node node::rename(
+    std::unordered_map<sdd::variable, sdd::variable> const& map
+  ) {
+    return rename([&](variable var) {
+      if(map.contains(var))
+        return map.at(var);
+      return var;
+    });
   }
 
   bool node::is_valid() const {

@@ -63,6 +63,7 @@ namespace sdd {
     manager &operator=(manager &&) = default;
 
     size_t var_count() const;
+    std::vector<variable> variables() const;
 
     std::vector<variable> var_order() const;
     void add_var_before_first();
@@ -163,6 +164,7 @@ namespace sdd {
     std::optional<bool> value(literal lit) const;
     
     node rename(std::function<sdd::variable(sdd::variable)> renaming);
+    node rename(std::unordered_map<sdd::variable, sdd::variable> const&);
 
     bool is_valid() const;
     bool is_sat() const;
